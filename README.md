@@ -28,7 +28,7 @@ The main experiments are run on [IAM](http://www.fki.inf.unibe.ch/databases/iam-
 First download the IAM word level dataset, then refer your folder in `load_data.py` (search `img_base`). Then run the training with:
 
 ```bash
-./run_train.sh
+./run_train_scratch.sh
 ```
 
 **Note**: During the training process, two folders will be created: 
