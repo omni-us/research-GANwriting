@@ -1,3 +1,4 @@
+import os
 import torch.utils.data as D
 import random
 import string
@@ -138,8 +139,12 @@ class IAM_words(D.Dataset):
         return len(self.data_dict)
 
     def read_image_single(self, file_name):
-        url = img_base + file_name + '.png'
+        url = os.path.join(img_base, file_name + '.png')
         img = cv2.imread(url, 0)
+
+        if img is None and os.path.exists(url):
+            # image is present but corrupted
+            return np.zeros((IMG_HEIGHT, IMG_WIDTH)), 0
 
         rate = float(IMG_HEIGHT) / img.shape[0]
         img = cv2.resize(img, (int(img.shape[1]*rate)+1, IMG_HEIGHT), interpolation=cv2.INTER_CUBIC)
