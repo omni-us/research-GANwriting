@@ -17,15 +17,22 @@ Accepted to ECCV2020.
 - Python 3.7
 - PyTorch 1.4
 
+## Setup
+
+ To install the required dependencies run the following command in the root directory of the project:
+ `pip install -r requirements.txt`
+
 ## Dataset preparation
 
 The main experiments are run on [IAM](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database) since it's a multi-writer dataset. Furthermore, when you have obtained a pretrained model on IAM, you could apply it on other datasets as evaluation, such as [GW](http://www.fki.inf.unibe.ch/databases/iam-historical-document-database/washington-database),  [RIMES](http://www.a2ialab.com/doku.php?id=rimes_database:start), [Esposalles](http://dag.cvc.uab.es/the-esposalles-database/) and
 [CVL](https://cvl.tuwien.ac.at/research/cvl-databases/an-off-line-database-for-writer-retrieval-writer-identification-and-word-spotting/). 
 
-
 ## How to train it?
 
-First download the IAM word level dataset, then refer your folder in `load_data.py` (search `img_base`). Then run the training with:
+First download the IAM word level dataset, then execute `prepare_dataset.sh [folder of iamdb dataset]` to prepared the dataset for training.  
+Afterwards, refer your folder in `load_data.py` (search `img_base`). 
+
+Then run the training with:
 
 ```bash
 ./run_train_scratch.sh
