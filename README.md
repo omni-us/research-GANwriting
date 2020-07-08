@@ -41,6 +41,14 @@ Then run the training with:
 **Note**: During the training process, two folders will be created: 
 `imgs/` contains the intermediate results of one batch (you may like to check the details in function `write_image` from `modules_tro.py`), and `save_weights/` consists of saved weights ending with `.model`.
 
+If you have already trained a model, you can use that model for further training by running:
+
+```bash
+./run_train_pretrain.sh [id]
+```
+
+In this case, `[id]` should be the id of the model in the `save_weights` directory, e.g. 1000 if you have a model named `contran-1000.model`.
+
 
 ## How to test it?
 
