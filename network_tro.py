@@ -56,14 +56,14 @@ class ConTranModel(nn.Module):
             self.iter_num += 1
             '''dis loss'''
             f_xs = self.gen.enc_image(tr_img) # b,512,8,27
-            f_xt, f_embed = self.gen.enc_text(label_xt) # b,4096  b,512,8,27
+            f_xt, f_embed = self.gen.enc_text(label_xt, f_xs.shape) # b,4096  b,512,8,27
             f_mix = self.gen.mix(f_xs, f_embed)
 
             xg = self.gen.decode(f_mix, f_xt)  # translation b,1,64,128
             l_dis_ori = self.dis.calc_gen_loss(xg)
 
             # '''poco modi -> swap char'''
-            f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap)
+            f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap, f_xs.shape)
             f_mix_swap = self.gen.mix(f_xs, f_embed_swap)
             xg_swap = self.gen.decode(f_mix_swap, f_xt_swap)  # translation b,1,64,128
             l_dis_swap = self.dis.calc_gen_loss(xg_swap)
@@ -108,11 +108,11 @@ class ConTranModel(nn.Module):
 
             with torch.no_grad():
                 f_xs = self.gen.enc_image(tr_img)
-                f_xt, f_embed = self.gen.enc_text(label_xt)
+                f_xt, f_embed = self.gen.enc_text(label_xt, f_xs.shape)
                 f_mix = self.gen.mix(f_xs, f_embed)
                 xg = self.gen.decode(f_mix, f_xt)
                 # swap tambien
-                f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap)
+                f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap, f_xs.shape)
                 f_mix_swap = self.gen.mix(f_xs, f_embed_swap)
                 xg_swap = self.gen.decode(f_mix_swap, f_xt_swap)
 
@@ -133,11 +133,11 @@ class ConTranModel(nn.Module):
         elif mode =='eval':
             with torch.no_grad():
                 f_xs = self.gen.enc_image(tr_img)
-                f_xt, f_embed = self.gen.enc_text(label_xt)
+                f_xt, f_embed = self.gen.enc_text(label_xt, f_xs.shape)
                 f_mix = self.gen.mix(f_xs, f_embed)
                 xg = self.gen.decode(f_mix, f_xt)
                 # second oov word
-                f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap)
+                f_xt_swap, f_embed_swap = self.gen.enc_text(label_xt_swap, f_xs.shape)
                 f_mix_swap = self.gen.mix(f_xs, f_embed_swap)
                 xg_swap = self.gen.decode(f_mix_swap, f_xt_swap)
                 '''write images'''
