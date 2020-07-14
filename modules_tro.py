@@ -8,7 +8,7 @@ from recognizer.models.encoder_vgg import Encoder as rec_encoder
 from recognizer.models.decoder import Decoder as rec_decoder
 from recognizer.models.seq2seq import Seq2Seq as rec_seq2seq
 from recognizer.models.attention import locationAttention as rec_attention
-from load_data import OUTPUT_MAX_LEN, IMG_HEIGHT, IMG_WIDTH, vocab_size, index2letter, num_tokens
+from load_data import OUTPUT_MAX_LEN, IMG_HEIGHT, IMG_WIDTH, vocab_size, index2letter, num_tokens, tokens
 import cv2
 
 gpu = torch.device('cuda')
@@ -229,22 +229,35 @@ class TextEncoder_FC(nn.Module):
         '''embed content force'''
         self.linear = nn.Linear(embed_size, 512)
 
-    def forward(self, x):
+    def forward(self, x, f_xs_shape):
         xx = self.embed(x) # b,t,embed
+
         batch_size = xx.shape[0]
         xxx = xx.reshape(batch_size, -1) # b,t*embed
         out = self.fc(xxx)
+
         '''embed content force'''
-        xx_new = self.linear(xx) # b,9,512
+        xx_new = self.linear(xx) # b, text_max_len, 512
         ts = xx_new.shape[1]
+        height_reps = f_xs_shape[-2]
+        width_reps = f_xs_shape[-1] // ts
         tensor_list = list()
         for i in range(ts):
-            # hard code mierda!!! 3=27/9 img:b,512,8,27  text:b,9,512
-            tmp = torch.cat([xx_new[:, i:i+1]]*3, dim=1)
+            text = [xx_new[:, i:i + 1]] # b, text_max_len, 512
+            tmp = torch.cat(text * width_reps, dim=1)
             tensor_list.append(tmp)
-        res = torch.cat(tensor_list, dim=1) # b,3*9,512
-        res = res.permute(0, 2, 1).unsqueeze(2) # b,512,1,3*9
-        final_res = torch.cat([res]*8, dim=2) # hard code mierda!!!
+
+        embedded_padding_char = self.embed(torch.full((1, 1), tokens['PAD_TOKEN'], dtype=torch.long).cuda())
+        embedded_padding_char = self.linear(embedded_padding_char)
+        padding_reps = f_xs_shape[-1] % ts
+        batch_size = xx_new[:, 0].shape[0]
+        padding = embedded_padding_char.repeat(batch_size, padding_reps, 1)
+        tensor_list.append(padding)
+
+        res = torch.cat(tensor_list, dim=1) # b, text_max_len * width_reps + padding_reps, 512
+        res = res.permute(0, 2, 1).unsqueeze(2) # b, 512, 1, text_max_len * width_reps + padding_reps
+        final_res = torch.cat([res] * height_reps, dim=2)
+
         return out, final_res
 
 
@@ -257,7 +270,6 @@ class ImageEncoder(nn.Module):
 
     def forward(self, x):
         return self.model(x)
-
 
 class Decoder(nn.Module):
     def __init__(self, ups=3, n_res=2, dim=512, out_dim=1, res_norm='adain', activ='relu', pad_type='reflect'):
