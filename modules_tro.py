@@ -247,11 +247,12 @@ class TextEncoder_FC(nn.Module):
             tmp = torch.cat(text * width_reps, dim=1)
             tensor_list.append(tmp)
 
-        embedded_padding_char = self.embed(torch.full((1, 1), tokens['PAD_TOKEN'], dtype=torch.long).cuda())
-        embedded_padding_char = self.linear(embedded_padding_char)
         padding_reps = f_xs_shape[-1] % ts
-        padding = embedded_padding_char.repeat(batch_size, padding_reps, 1)
-        tensor_list.append(padding)
+        if padding_reps:
+            embedded_padding_char = self.embed(torch.full((1, 1), tokens['PAD_TOKEN'], dtype=torch.long).cuda())
+            embedded_padding_char = self.linear(embedded_padding_char)
+            padding = embedded_padding_char.repeat(batch_size, padding_reps, 1)
+            tensor_list.append(padding)
 
         res = torch.cat(tensor_list, dim=1) # b, text_max_len * width_reps + padding_reps, 512
         res = res.permute(0, 2, 1).unsqueeze(2) # b, 512, 1, text_max_len * width_reps + padding_reps
