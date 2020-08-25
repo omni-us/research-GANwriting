@@ -123,13 +123,14 @@ def test_writer(wid, model_file):
     model = ConTranModel(NUM_WRITERS, 0, True).to(gpu)
     print('Loading ' + model_file)
     model.load_state_dict(torch.load(model_file)) #load
+    print('Model loaded')
     model.eval()
     num = 0
     with torch.no_grad():
         f_xs = model.gen.enc_image(imgs)
         for label in labels:
             label = label.unsqueeze(0)
-            f_xt, f_embed = model.gen.enc_text(label)
+            f_xt, f_embed = model.gen.enc_text(label, f_xs.shape)
             f_mix = model.gen.mix(f_xs, f_embed)
             xg = model.gen.decode(f_mix, f_xt)
             pred = model.rec(xg, label, img_width=torch.from_numpy(np.array([IMG_WIDTH])))
